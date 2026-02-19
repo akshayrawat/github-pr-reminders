@@ -1,0 +1,25 @@
+name: GitHub PR Reminders
+description: Post a Slack message listing open PRs waiting for review in a GitHub org.
+inputs:
+  github_token:
+    description: GitHub token with access to repos in the org.
+    required: true
+  slack_bot_token:
+    description: Slack bot token with chat:write.
+    required: true
+  slack_channel:
+    description: Slack channel ID to post reminders in.
+    required: true
+  github_org:
+    description: GitHub organization name.
+    required: true
+  users_map_path:
+    description: Path to JSON mapping GitHub usernames to Slack user IDs.
+    required: false
+    default: config/users.json
+runs:
+  using: node20
+  main: dist/index.js
+branding:
+  icon: bell
+  color: blue

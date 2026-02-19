@@ -1,0 +1,34 @@
+{
+  "name": "github-pr-reminders",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "build": "tsup",
+    "package": "bun run build",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@slack/web-api": "^7.14.1",
+    "octokit": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.1.0",
+    "typescript": "^5.6.3"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "cjs"
+    ],
+    "target": "node20",
+    "platform": "node",
+    "outDir": "dist",
+    "clean": true,
+    "bundle": true
+  }
+}

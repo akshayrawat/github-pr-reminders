@@ -24,20 +24,19 @@ describe("formatMessage", () => {
     };
     const message = formatMessage(grouped, userMap, "my-org");
     expect(message).toContain("<@U01ALICE>");
-    expect(message).toContain("alice");
+    expect(message).toContain("suppress-pr-reminder");
     expect(message).toContain("<https://github.com/my-org/api/pull/1|api#1>");
     expect(message).toContain("Fix bug");
   });
 
-  it("shows GitHub username without mention for unmapped users", () => {
+  it("shows placeholder for unmapped users", () => {
     const grouped = {
       charlie: [
         { number: 3, title: "Add docs", repo: "web", html_url: "https://github.com/my-org/web/pull/3", requested_reviewers: [{ login: "charlie" }], draft: false, labels: [] },
       ],
     };
     const message = formatMessage(grouped, userMap, "my-org");
-    expect(message).toContain("charlie");
-    expect(message).toContain("no Slack mapping");
+    expect(message).toContain("Unmapped reviewer");
     expect(message).not.toContain("<@");
   });
 

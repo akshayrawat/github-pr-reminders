@@ -39,8 +39,8 @@ Install the app **org-wide** (recommended) or on **selected repos** if you want 
 
 #### Required secrets
 
-- `GITHUB_APP_ID` — the App ID
-- `GITHUB_APP_PRIVATE_KEY` — the private key (in PEM format)
+- `APP_ID` — the App ID
+- `APP_PRIVATE_KEY` — the private key (in PEM format)
 
 ### 4. Add secrets and variables
 
@@ -50,8 +50,8 @@ In **Settings > Secrets and variables > Actions**:
 
 | Name | Value |
 | --- | --- |
-| `GITHUB_APP_ID` | GitHub App ID |
-| `GITHUB_APP_PRIVATE_KEY` | GitHub App private key |
+| `APP_ID` | GitHub App ID |
+| `APP_PRIVATE_KEY` | GitHub App private key |
 | `SLACK_BOT_TOKEN` | Slack bot token (`xoxb-...`) |
 
 **Variables**
@@ -89,8 +89,8 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.GITHUB_APP_ID }}
-          private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: akshayrawat/github-pr-reminders@v1
         with:

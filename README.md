@@ -17,7 +17,7 @@ Create `config/users.json` in the repo where the workflow runs. This file maps G
 }
 ```
 
-To find a Slack user ID: open the user profile in Slack, click the three dots menu, and select "Copy member ID".
+To find a Slack user ID: open the user profile in Slack, click the three dots menu, and select "Copy member ID". The ID typically starts with `U` or `W`.
 
 ### 2. Create a Slack bot
 

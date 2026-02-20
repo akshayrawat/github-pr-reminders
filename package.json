@@ -29,6 +29,12 @@
     "platform": "node",
     "outDir": "dist",
     "clean": true,
-    "bundle": true
+    "bundle": true,
+    "skipNodeModulesBundle": false,
+    "noExternal": [
+      "@actions/core",
+      "@slack/web-api",
+      "octokit"
+    ]
   }
 }

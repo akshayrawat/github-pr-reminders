@@ -2,29 +2,13 @@
 
 Post a daily Slack message listing open pull requests waiting for review across your GitHub organization.
 
-This runs as a GitHub Action on a schedule, so there are no servers to manage.
+Runs as a GitHub Action on a schedule, so there are no servers to manage.
 
-## What It Does
+## Use This Action
 
-Each run:
+### 1. Add the reviewer allowlist + Slack mapping
 
-1. Searches **open PRs created in the last 3 months** (newest first)
-2. Excludes PRs labeled `suppress-pr-reminder`
-3. Keeps only PRs that have requested reviewers **present in your `config/users.json` mapping**
-4. Limits to **up to 100 PRs** per run
-5. Groups PRs by reviewer and posts a single Slack message
-
-If there are no matching PRs, it posts:
-
-```
-🎉 No PRs waiting for review! The queue is empty.
-```
-
-## Quick Start
-
-### 1. Configure the reviewer allowlist and Slack mapping
-
-Edit `config/users.json` to map GitHub usernames to Slack user IDs. This file also acts as the **reviewer allowlist** (only PRs with reviewers in this list are included).
+Create `config/users.json` in the repo where the workflow runs. This file maps GitHub usernames to Slack user IDs and also acts as the **reviewer allowlist** (only PRs with reviewers in this list are included).
 
 ```json
 {
@@ -33,7 +17,7 @@ Edit `config/users.json` to map GitHub usernames to Slack user IDs. This file al
 }
 ```
 
-To find a Slack user ID: open the user profile, click the three dots menu, and select "Copy member ID".
+To find a Slack user ID: open the user profile in Slack, click the three dots menu, and select "Copy member ID".
 
 ### 2. Create a Slack bot
 
@@ -96,7 +80,9 @@ jobs:
           github_org: ${{ vars.GITHUB_ORG }}
 ```
 
-## Action Inputs
+## Configuration
+
+**Action inputs**
 
 | Input | Required | Default | Description |
 | --- | --- | --- | --- |
@@ -106,18 +92,33 @@ jobs:
 | `github_org` | yes | | GitHub org name |
 | `users_map_path` | no | `config/users.json` | Path to GitHub-to-Slack mapping (also reviewer allowlist) |
 
-## Behavior Notes
+## How It Works
 
-- The action looks at **PRs created in the last 3 months**.
-- It only includes PRs whose **requested reviewers are present in `config/users.json`**.
-- It processes **up to 100 PRs** per run (newest first). Older PRs and excess results are ignored.
+Each run:
+
+1. Searches open PRs **created in the last 3 months** (newest first)
+2. Excludes PRs labeled `suppress-pr-reminder`
+3. Excludes draft PRs
+4. Keeps only PRs with requested reviewers present in `config/users.json`
+5. Limits to **up to 100 PRs** per run
+6. Groups PRs by reviewer and posts a single Slack message
+
+If there are no matching PRs, it posts:
+
+```
+🎉 No PRs waiting for review! The queue is empty.
+```
+
+## Notes and Limits
+
+- The GitHub Search API is used, and results are capped at 100 per run.
+- PRs older than 3 months are ignored.
+- Only reviewers in `config/users.json` are considered. PRs whose requested reviewers are not in the mapping are excluded.
 - The `suppress-pr-reminder` label always excludes a PR.
 
 ## Changing the Schedule
 
-Edit the cron expression in `.github/workflows/pr-reminders.yml`.
-
-The schedule is in UTC.
+Edit the cron expression in `.github/workflows/pr-reminders.yml`. The schedule is in UTC.
 
 ## Development
 

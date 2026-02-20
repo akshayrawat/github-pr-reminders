@@ -59,7 +59,7 @@ In **Settings > Secrets and variables > Actions**:
 | Name | Value |
 | --- | --- |
 | `SLACK_CHANNEL` | Slack channel ID (e.g. `C01ABCDEF`) |
-| `GITHUB_ORG` | GitHub org name (e.g. `my-org`) |
+| `ORG_NAME` | GitHub org name (e.g. `my-org`) |
 
 ### 5. Add the workflow
 
@@ -97,7 +97,7 @@ jobs:
           github_token: ${{ steps.app-token.outputs.token }}
           slack_bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
           slack_channel: ${{ vars.SLACK_CHANNEL }}
-          github_org: ${{ vars.GITHUB_ORG }}
+          github_org: ${{ vars.ORG_NAME }}
 ```
 
 ## Configuration

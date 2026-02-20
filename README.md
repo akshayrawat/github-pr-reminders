@@ -162,6 +162,19 @@ bun run src/index.ts
 
 ## Releasing
 
+This repo includes a manual release workflow that builds `dist/` and tags releases.
+
+### Automated release (recommended)
+
+1. Go to the **Actions** tab
+2. Select **Release**
+3. Click **Run workflow**
+4. Enter a version like `1.2.3`
+
+The workflow will build `dist/`, commit it if needed, tag `v1.2.3`, move `v1`, and push.
+
+### Manual release
+
 1. `bun install`
 2. `bun run build` (generates `dist/index.js`)
 3. Commit `dist/`

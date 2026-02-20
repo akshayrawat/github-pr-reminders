@@ -47947,7 +47947,7 @@ function formatMessage(grouped, userMap, org) {
     return "\u{1F389} No PRs waiting for review! The queue is empty.";
   }
   let message = "\u{1F50D} *PRs waiting for review*\n";
-  message += "Tip: add the `suppress-pr-reminder` label to hide a PR.\n";
+  message += "Use the `suppress-pr-reminder` label to hide a PR.\n";
   for (const reviewer of reviewers.sort()) {
     const slackId = userMap[reviewer];
     const mention = slackId ? `<@${slackId}>` : "Unmapped reviewer";

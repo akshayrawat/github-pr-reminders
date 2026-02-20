@@ -24,7 +24,7 @@ describe("formatMessage", () => {
     };
     const message = formatMessage(grouped, userMap, "my-org");
     expect(message).toContain("<@U01ALICE>");
-    expect(message).toContain("suppress-pr-reminder");
+    expect(message).toContain("Use the `suppress-pr-reminder` label");
     expect(message).toContain("<https://github.com/my-org/api/pull/1|api#1>");
     expect(message).toContain("Fix bug");
   });

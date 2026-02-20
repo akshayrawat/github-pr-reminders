@@ -47844,9 +47844,6 @@ function parseRepoFromUrl(url) {
 }
 function filterPR(pr, allowlist, cutoffDate) {
   const reasons = [];
-  if (pr.draft) {
-    reasons.push("draft");
-  }
   if (pr.labels.some((label) => label.name === SUPPRESS_LABEL)) {
     reasons.push(`label:${SUPPRESS_LABEL}`);
   }
@@ -47869,7 +47866,7 @@ function filterPR(pr, allowlist, cutoffDate) {
 async function fetchRecentPRs(token, org, reviewerAllowlist) {
   const octokit = new Octokit2({ auth: token });
   const cutoffDate = monthsAgoDate(MONTHS_BACK);
-  const query = `org:${org} is:pr is:open created:>=${formatDate(cutoffDate)} -label:${SUPPRESS_LABEL}`;
+  const query = `org:${org} is:pr is:open created:>=${formatDate(cutoffDate)} -label:${SUPPRESS_LABEL} -is:draft`;
   core.info(`Search query: ${query}`);
   core.info(`Cutoff date (UTC): ${formatDate(cutoffDate)}`);
   core.info(`Reviewer allowlist size: ${reviewerAllowlist.size}`);
@@ -47899,7 +47896,6 @@ async function fetchRecentPRs(token, org, reviewerAllowlist) {
       const candidate = {
         number: pr.number,
         title: pr.title,
-        draft: pr.draft,
         requested_reviewers: pr.requested_reviewers,
         labels: pr.labels,
         html_url: pr.html_url,

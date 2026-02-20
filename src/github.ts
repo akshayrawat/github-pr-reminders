@@ -4,7 +4,6 @@ import { Octokit } from "octokit";
 interface PR {
   number: number;
   title: string;
-  draft: boolean;
   requested_reviewers: { login: string }[];
   labels: { name: string }[];
   html_url?: string;
@@ -52,10 +51,6 @@ function filterPR(
 ): { include: boolean; reasons: string[]; normalized: PR } {
   const reasons: string[] = [];
 
-  if (pr.draft) {
-    reasons.push("draft");
-  }
-
   if (pr.labels.some((label) => label.name === SUPPRESS_LABEL)) {
     reasons.push(`label:${SUPPRESS_LABEL}`);
   }
@@ -87,7 +82,7 @@ export async function fetchRecentPRs(
   const octokit = new Octokit({ auth: token });
 
   const cutoffDate = monthsAgoDate(MONTHS_BACK);
-  const query = `org:${org} is:pr is:open created:>=${formatDate(cutoffDate)} -label:${SUPPRESS_LABEL}`;
+  const query = `org:${org} is:pr is:open created:>=${formatDate(cutoffDate)} -label:${SUPPRESS_LABEL} -is:draft`;
 
   core.info(`Search query: ${query}`);
   core.info(`Cutoff date (UTC): ${formatDate(cutoffDate)}`);
@@ -125,7 +120,6 @@ export async function fetchRecentPRs(
       const candidate: PR = {
         number: pr.number,
         title: pr.title,
-        draft: pr.draft,
         requested_reviewers: pr.requested_reviewers as { login: string }[],
         labels: pr.labels as { name: string }[],
         html_url: pr.html_url,

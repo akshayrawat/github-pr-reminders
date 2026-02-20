@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import { Octokit } from "octokit";
 
 interface PR {
@@ -39,17 +40,43 @@ function parseRepoFromUrl(url: string): { owner: string; repo: string } {
 
 export function filterPRs(prs: PR[], allowlist: Set<string>, cutoffDate: Date): PR[] {
   return prs
-    .map((pr) => ({
+    .map((pr) => filterPR(pr, allowlist, cutoffDate))
+    .filter((result) => result.include)
+    .map((result) => result.normalized);
+}
+
+function filterPR(
+  pr: PR,
+  allowlist: Set<string>,
+  cutoffDate: Date
+): { include: boolean; reasons: string[]; normalized: PR } {
+  const reasons: string[] = [];
+
+  if (pr.draft) {
+    reasons.push("draft");
+  }
+
+  if (pr.labels.some((label) => label.name === SUPPRESS_LABEL)) {
+    reasons.push(`label:${SUPPRESS_LABEL}`);
+  }
+
+  if (new Date(pr.created_at) < cutoffDate) {
+    reasons.push("created_before_cutoff");
+  }
+
+  const allowedReviewers = pr.requested_reviewers.filter((reviewer) => allowlist.has(reviewer.login));
+  if (allowedReviewers.length === 0) {
+    reasons.push("no_allowlisted_reviewers");
+  }
+
+  return {
+    include: reasons.length === 0,
+    reasons,
+    normalized: {
       ...pr,
-      requested_reviewers: pr.requested_reviewers.filter((reviewer) => allowlist.has(reviewer.login)),
-    }))
-    .filter(
-      (pr) =>
-        !pr.draft &&
-        pr.requested_reviewers.length > 0 &&
-        !pr.labels.some((label) => label.name === SUPPRESS_LABEL) &&
-        new Date(pr.created_at) >= cutoffDate
-    );
+      requested_reviewers: allowedReviewers,
+    },
+  };
 }
 
 export async function fetchRecentPRs(
@@ -62,6 +89,10 @@ export async function fetchRecentPRs(
   const cutoffDate = monthsAgoDate(MONTHS_BACK);
   const query = `org:${org} is:pr is:open created:>=${formatDate(cutoffDate)} -label:${SUPPRESS_LABEL}`;
 
+  core.info(`Search query: ${query}`);
+  core.info(`Cutoff date (UTC): ${formatDate(cutoffDate)}`);
+  core.info(`Reviewer allowlist size: ${reviewerAllowlist.size}`);
+
   const search = await octokit.rest.search.issuesAndPullRequests({
     q: query,
     sort: "created",
@@ -72,9 +103,13 @@ export async function fetchRecentPRs(
 
   const results: RepoPR[] = [];
   const items = search.data.items.slice(0, MAX_RESULTS);
+  const reasonCounts: Record<string, number> = {};
+
+  core.info(`Search results: ${search.data.total_count} (processing ${items.length})`);
 
   for (const item of items) {
     if (!item.pull_request || !item.repository_url) {
+      core.debug(`Skipping issue ${item.number}: not a pull request`);
       continue;
     }
 
@@ -97,15 +132,28 @@ export async function fetchRecentPRs(
         created_at: pr.created_at,
       };
 
-      const filtered = filterPRs([candidate], reviewerAllowlist, cutoffDate);
-      if (filtered.length === 0) {
+      const evaluation = filterPR(candidate, reviewerAllowlist, cutoffDate);
+      if (!evaluation.include) {
+        for (const reason of evaluation.reasons) {
+          reasonCounts[reason] = (reasonCounts[reason] ?? 0) + 1;
+        }
+        core.debug(`Skipping ${owner}/${repo}#${item.number}: ${evaluation.reasons.join(", ")}`);
         continue;
       }
 
-      results.push({ ...filtered[0], repo });
+      results.push({ ...evaluation.normalized, repo });
     } catch (error) {
       console.warn(`Warning: Failed to fetch PR details for ${owner}/${repo}#${item.number}:`, error);
     }
+  }
+
+  const skipped = items.length - results.length;
+  core.info(`Included PRs: ${results.length}. Skipped: ${skipped}.`);
+  if (skipped > 0) {
+    const breakdown = Object.entries(reasonCounts)
+      .map(([reason, count]) => `${reason}=${count}`)
+      .join(", ");
+    core.info(`Skip reasons: ${breakdown}`);
   }
 
   return results;

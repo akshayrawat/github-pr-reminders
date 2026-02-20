@@ -393,7 +393,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug("making CONNECT request");
+      debug2("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -413,7 +413,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug(
+          debug2(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -425,7 +425,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug("got illegal response body from proxy");
+          debug2("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -433,13 +433,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug("tunneling connection has established");
+        debug2("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug(
+        debug2(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -501,9 +501,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug;
+    var debug2;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug = function() {
+      debug2 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -513,10 +513,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug = function() {
+      debug2 = function() {
       };
     }
-    exports2.debug = debug;
+    exports2.debug = debug2;
   }
 });
 
@@ -17590,12 +17590,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info2 = this._prepareRequest(verb, parsedUrl, headers);
+          let info3 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info2, data);
+            response = yield this.requestRaw(info3, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler2 of this.handlers) {
@@ -17605,7 +17605,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info2, data);
+                return authenticationHandler.handleAuthentication(this, info3, data);
               } else {
                 return response;
               }
@@ -17628,8 +17628,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info2, data);
+              info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info3, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -17658,7 +17658,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info2, data) {
+      requestRaw(info3, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -17670,7 +17670,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info2, data, callbackForResult);
+            this.requestRawWithCallback(info3, data, callbackForResult);
           });
         });
       }
@@ -17680,12 +17680,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info2, data, onResult) {
+      requestRawWithCallback(info3, data, onResult) {
         if (typeof data === "string") {
-          if (!info2.options.headers) {
-            info2.options.headers = {};
+          if (!info3.options.headers) {
+            info3.options.headers = {};
           }
-          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -17694,7 +17694,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info2.httpModule.request(info2.options, (msg) => {
+        const req = info3.httpModule.request(info3.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -17706,7 +17706,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info2.options.path}`));
+          handleResult(new Error(`Request timeout: ${info3.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -17742,27 +17742,27 @@ var require_lib = __commonJS({
         return this._getProxyAgentDispatcher(parsedUrl, proxyUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info2 = {};
-        info2.parsedUrl = requestUrl;
-        const usingSsl = info2.parsedUrl.protocol === "https:";
-        info2.httpModule = usingSsl ? https : http;
+        const info3 = {};
+        info3.parsedUrl = requestUrl;
+        const usingSsl = info3.parsedUrl.protocol === "https:";
+        info3.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info2.options = {};
-        info2.options.host = info2.parsedUrl.hostname;
-        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
-        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
-        info2.options.method = method;
-        info2.options.headers = this._mergeHeaders(headers);
+        info3.options = {};
+        info3.options.host = info3.parsedUrl.hostname;
+        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
+        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
+        info3.options.method = method;
+        info3.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info2.options.headers["user-agent"] = this.userAgent;
+          info3.options.headers["user-agent"] = this.userAgent;
         }
-        info2.options.agent = this._getAgent(info2.parsedUrl);
+        info3.options.agent = this._getAgent(info3.parsedUrl);
         if (this.handlers) {
           for (const handler2 of this.handlers) {
-            handler2.prepareRequest(info2.options);
+            handler2.prepareRequest(info3.options);
           }
         }
-        return info2;
+        return info3;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -19736,10 +19736,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports2.isDebug = isDebug;
-    function debug(message) {
+    function debug2(message) {
       (0, command_1.issueCommand)("debug", {}, message);
     }
-    exports2.debug = debug;
+    exports2.debug = debug2;
     function error(message, properties = {}) {
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -19752,10 +19752,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports2.notice = notice;
-    function info2(message) {
+    function info3(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports2.info = info2;
+    exports2.info = info3;
     function startGroup(name) {
       (0, command_1.issue)("group", name);
     }
@@ -32326,11 +32326,11 @@ var require_common = __commonJS({
         let enableOverride = null;
         let namespacesCache;
         let enabledCache;
-        function debug(...args) {
-          if (!debug.enabled) {
+        function debug2(...args) {
+          if (!debug2.enabled) {
             return;
           }
-          const self2 = debug;
+          const self2 = debug2;
           const curr = Number(/* @__PURE__ */ new Date());
           const ms = curr - (prevTime || curr);
           self2.diff = ms;
@@ -32360,12 +32360,12 @@ var require_common = __commonJS({
           const logFn = self2.log || createDebug.log;
           logFn.apply(self2, args);
         }
-        debug.namespace = namespace;
-        debug.useColors = createDebug.useColors();
-        debug.color = createDebug.selectColor(namespace);
-        debug.extend = extend;
-        debug.destroy = createDebug.destroy;
-        Object.defineProperty(debug, "enabled", {
+        debug2.namespace = namespace;
+        debug2.useColors = createDebug.useColors();
+        debug2.color = createDebug.selectColor(namespace);
+        debug2.extend = extend;
+        debug2.destroy = createDebug.destroy;
+        Object.defineProperty(debug2, "enabled", {
           enumerable: true,
           configurable: false,
           get: () => {
@@ -32383,9 +32383,9 @@ var require_common = __commonJS({
           }
         });
         if (typeof createDebug.init === "function") {
-          createDebug.init(debug);
+          createDebug.init(debug2);
         }
-        return debug;
+        return debug2;
       }
       function extend(namespace, delimiter) {
         const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
@@ -32797,11 +32797,11 @@ var require_node = __commonJS({
     function load() {
       return process.env.DEBUG;
     }
-    function init(debug) {
-      debug.inspectOpts = {};
+    function init(debug2) {
+      debug2.inspectOpts = {};
       const keys = Object.keys(exports2.inspectOpts);
       for (let i = 0; i < keys.length; i++) {
-        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
+        debug2.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
       }
     }
     module2.exports = require_common()(exports2);
@@ -32833,19 +32833,19 @@ var require_src = __commonJS({
 var require_debug = __commonJS({
   "node_modules/follow-redirects/debug.js"(exports2, module2) {
     "use strict";
-    var debug;
+    var debug2;
     module2.exports = function() {
-      if (!debug) {
+      if (!debug2) {
         try {
-          debug = require_src()("follow-redirects");
+          debug2 = require_src()("follow-redirects");
         } catch (error) {
         }
-        if (typeof debug !== "function") {
-          debug = function() {
+        if (typeof debug2 !== "function") {
+          debug2 = function() {
           };
         }
       }
-      debug.apply(null, arguments);
+      debug2.apply(null, arguments);
     };
   }
 });
@@ -32860,7 +32860,7 @@ var require_follow_redirects = __commonJS({
     var https = require("https");
     var Writable = require("stream").Writable;
     var assert = require("assert");
-    var debug = require_debug();
+    var debug2 = require_debug();
     (function detectUnsupportedEnvironment() {
       var looksLikeNode = typeof process !== "undefined";
       var looksLikeBrowser = typeof window !== "undefined" && typeof document !== "undefined";
@@ -33177,7 +33177,7 @@ var require_follow_redirects = __commonJS({
       var currentHost = currentHostHeader || currentUrlParts.host;
       var currentUrl = /^\w+:/.test(location) ? this._currentUrl : url.format(Object.assign(currentUrlParts, { host: currentHost }));
       var redirectUrl = resolveUrl(location, currentUrl);
-      debug("redirecting to", redirectUrl.href);
+      debug2("redirecting to", redirectUrl.href);
       this._isRedirect = true;
       spreadUrlObject(redirectUrl, this._options);
       if (redirectUrl.protocol !== currentUrlParts.protocol && redirectUrl.protocol !== "https:" || redirectUrl.host !== currentHost && !isSubdomain(redirectUrl.host, currentHost)) {
@@ -33231,7 +33231,7 @@ var require_follow_redirects = __commonJS({
             options.hostname = "::1";
           }
           assert.equal(options.protocol, protocol, "protocol mismatch");
-          debug("options", options);
+          debug2("options", options);
           return new RedirectableRequest(options, callback);
         }
         function get3(input, options, callback) {
@@ -41108,7 +41108,10 @@ var require_dist4 = __commonJS({
 });
 
 // src/index.ts
-var core2 = __toESM(require_core());
+var core3 = __toESM(require_core());
+
+// src/github.ts
+var core = __toESM(require_core());
 
 // node_modules/universal-user-agent/index.js
 function getUserAgent() {
@@ -44780,11 +44783,11 @@ async function errorRequest(state, octokit, error, options) {
 }
 async function wrapRequest(state, octokit, request2, options) {
   const limiter = new import_light.default();
-  limiter.on("failed", function(error, info2) {
+  limiter.on("failed", function(error, info3) {
     const maxRetries = ~~error.request.request?.retries;
     const after = ~~error.request.request?.retryAfter;
-    options.request.retryCount = info2.retryCount + 1;
-    if (maxRetries > info2.retryCount) {
+    options.request.retryCount = info3.retryCount + 1;
+    if (maxRetries > info3.retryCount) {
       return after * state.retryAfterBaseValue;
     }
   });
@@ -44995,8 +44998,8 @@ function throttling(octokit, octokitOptions) {
     "error",
     (e) => octokit.log.warn("Error in throttling-plugin limit handler", e)
   );
-  state.retryLimiter.on("failed", async function(error, info2) {
-    const [state2, request2, options] = info2.args;
+  state.retryLimiter.on("failed", async function(error, info3) {
+    const [state2, request2, options] = info3.args;
     const { pathname } = new URL(options.url, "http://github.test");
     const shouldRetryGraphQL = pathname.startsWith("/graphql") && error.status !== 401;
     if (!(shouldRetryGraphQL || error.status === 403 || error.status === 429)) {
@@ -47839,18 +47842,37 @@ function parseRepoFromUrl(url) {
   }
   return { owner: match[1], repo: match[2] };
 }
-function filterPRs(prs, allowlist, cutoffDate) {
-  return prs.map((pr) => ({
-    ...pr,
-    requested_reviewers: pr.requested_reviewers.filter((reviewer) => allowlist.has(reviewer.login))
-  })).filter(
-    (pr) => !pr.draft && pr.requested_reviewers.length > 0 && !pr.labels.some((label) => label.name === SUPPRESS_LABEL) && new Date(pr.created_at) >= cutoffDate
-  );
+function filterPR(pr, allowlist, cutoffDate) {
+  const reasons = [];
+  if (pr.draft) {
+    reasons.push("draft");
+  }
+  if (pr.labels.some((label) => label.name === SUPPRESS_LABEL)) {
+    reasons.push(`label:${SUPPRESS_LABEL}`);
+  }
+  if (new Date(pr.created_at) < cutoffDate) {
+    reasons.push("created_before_cutoff");
+  }
+  const allowedReviewers = pr.requested_reviewers.filter((reviewer) => allowlist.has(reviewer.login));
+  if (allowedReviewers.length === 0) {
+    reasons.push("no_allowlisted_reviewers");
+  }
+  return {
+    include: reasons.length === 0,
+    reasons,
+    normalized: {
+      ...pr,
+      requested_reviewers: allowedReviewers
+    }
+  };
 }
 async function fetchRecentPRs(token, org, reviewerAllowlist) {
   const octokit = new Octokit2({ auth: token });
   const cutoffDate = monthsAgoDate(MONTHS_BACK);
   const query = `org:${org} is:pr is:open created:>=${formatDate(cutoffDate)} -label:${SUPPRESS_LABEL}`;
+  core.info(`Search query: ${query}`);
+  core.info(`Cutoff date (UTC): ${formatDate(cutoffDate)}`);
+  core.info(`Reviewer allowlist size: ${reviewerAllowlist.size}`);
   const search = await octokit.rest.search.issuesAndPullRequests({
     q: query,
     sort: "created",
@@ -47860,8 +47882,11 @@ async function fetchRecentPRs(token, org, reviewerAllowlist) {
   });
   const results = [];
   const items = search.data.items.slice(0, MAX_RESULTS);
+  const reasonCounts = {};
+  core.info(`Search results: ${search.data.total_count} (processing ${items.length})`);
   for (const item of items) {
     if (!item.pull_request || !item.repository_url) {
+      core.debug(`Skipping issue ${item.number}: not a pull request`);
       continue;
     }
     const { owner, repo } = parseRepoFromUrl(item.repository_url);
@@ -47880,14 +47905,24 @@ async function fetchRecentPRs(token, org, reviewerAllowlist) {
         html_url: pr.html_url,
         created_at: pr.created_at
       };
-      const filtered = filterPRs([candidate], reviewerAllowlist, cutoffDate);
-      if (filtered.length === 0) {
+      const evaluation = filterPR(candidate, reviewerAllowlist, cutoffDate);
+      if (!evaluation.include) {
+        for (const reason of evaluation.reasons) {
+          reasonCounts[reason] = (reasonCounts[reason] ?? 0) + 1;
+        }
+        core.debug(`Skipping ${owner}/${repo}#${item.number}: ${evaluation.reasons.join(", ")}`);
         continue;
       }
-      results.push({ ...filtered[0], repo });
+      results.push({ ...evaluation.normalized, repo });
     } catch (error) {
       console.warn(`Warning: Failed to fetch PR details for ${owner}/${repo}#${item.number}:`, error);
     }
+  }
+  const skipped = items.length - results.length;
+  core.info(`Included PRs: ${results.length}. Skipped: ${skipped}.`);
+  if (skipped > 0) {
+    const breakdown = Object.entries(reasonCounts).map(([reason, count]) => `${reason}=${count}`).join(", ");
+    core.info(`Skip reasons: ${breakdown}`);
   }
   return results;
 }
@@ -47932,7 +47967,7 @@ async function postToSlack(token, channel, text) {
 }
 
 // src/config.ts
-var core = __toESM(require_core());
+var core2 = __toESM(require_core());
 var import_promises = require("fs/promises");
 var import_node_path = __toESM(require("path"));
 var DEFAULT_USERS_MAP_PATH = "config/users.json";
@@ -47966,11 +48001,11 @@ async function readUsersMap(usersMapPath) {
   return map;
 }
 async function loadConfig() {
-  const githubToken = core.getInput("github_token", { required: true });
-  const slackToken = core.getInput("slack_bot_token", { required: true });
-  const slackChannel = core.getInput("slack_channel", { required: true });
-  const org = core.getInput("github_org", { required: true });
-  const usersMapPath = core.getInput("users_map_path") || DEFAULT_USERS_MAP_PATH;
+  const githubToken = core2.getInput("github_token", { required: true });
+  const slackToken = core2.getInput("slack_bot_token", { required: true });
+  const slackChannel = core2.getInput("slack_channel", { required: true });
+  const org = core2.getInput("github_org", { required: true });
+  const usersMapPath = core2.getInput("users_map_path") || DEFAULT_USERS_MAP_PATH;
   const userMap = await readUsersMap(usersMapPath);
   return {
     githubToken,
@@ -47984,25 +48019,25 @@ async function loadConfig() {
 // src/index.ts
 async function run() {
   const { githubToken, slackToken, slackChannel, org, userMap } = await loadConfig();
-  core2.setSecret(githubToken);
-  core2.setSecret(slackToken);
+  core3.setSecret(githubToken);
+  core3.setSecret(slackToken);
   const reviewerAllowlist = new Set(Object.keys(userMap));
   if (reviewerAllowlist.size === 0) {
-    core2.warning("User mapping is empty; no PRs will match reviewer allowlist.");
+    core3.warning("User mapping is empty; no PRs will match reviewer allowlist.");
   }
-  core2.info(`Fetching open PRs for org: ${org}`);
+  core3.info(`Fetching open PRs for org: ${org}`);
   const prs = await fetchRecentPRs(githubToken, org, reviewerAllowlist);
-  core2.info(`Found ${prs.length} PRs waiting for review`);
+  core3.info(`Found ${prs.length} PRs waiting for review`);
   const grouped = groupByReviewer(prs);
   const message = formatMessage(grouped, userMap, org);
-  core2.info("Posting to Slack...");
-  core2.info(message);
+  core3.info("Posting to Slack...");
+  core3.info(message);
   await postToSlack(slackToken, slackChannel, message);
-  core2.info("Done!");
+  core3.info("Done!");
 }
 run().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
-  core2.setFailed(message);
+  core3.setFailed(message);
 });
 /*! Bundled license information:
 

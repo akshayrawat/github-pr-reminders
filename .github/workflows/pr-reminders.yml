@@ -6,9 +6,17 @@ on:
     - cron: '30 3 * * 1-5'
   workflow_dispatch: # Allow manual trigger for testing
 
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-review-reminders
+  cancel-in-progress: true
+
 jobs:
   remind:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: ./

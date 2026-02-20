@@ -32,6 +32,7 @@ To find a Slack user ID: open the user profile in Slack, click the three dots me
 Create a GitHub App owned by your organization and grant the following **read** permissions:
 
 - **Pull requests**: Read
+- **Issues**: Read
 - **Contents**: Read
 - **Metadata**: Read
 
@@ -91,6 +92,7 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ vars.ORG_NAME }}
 
       - uses: akshayrawat/github-pr-reminders@v1
         with:

@@ -92,7 +92,7 @@ jobs:
           app-id: ${{ secrets.GITHUB_APP_ID }}
           private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
 
-      - uses: your-org/github-pr-reminders@v1
+      - uses: akshayrawat/github-pr-reminders@v1.0.1
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           slack_bot_token: ${{ secrets.SLACK_BOT_TOKEN }}

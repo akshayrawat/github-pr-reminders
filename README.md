@@ -27,9 +27,20 @@ To find a Slack user ID: open the user profile in Slack, click the three dots me
 4. Copy the **Bot User OAuth Token** (starts with `xoxb-`)
 5. Invite the bot to the channel where you want reminders posted
 
-### 3. Create a GitHub token
+### 3. Create a GitHub App
 
-Create a GitHub token with access to all repos in your org (fine-grained or classic with `repo` scope).
+Create a GitHub App owned by your organization and grant the following **read** permissions:
+
+- **Pull requests**: Read
+- **Contents**: Read
+- **Metadata**: Read
+
+Install the app **org-wide** (recommended) or on **selected repos** if you want to limit scope.
+
+#### Required secrets
+
+- `GITHUB_APP_ID` — the App ID
+- `GITHUB_APP_PRIVATE_KEY` — the private key (in PEM format)
 
 ### 4. Add secrets and variables
 
@@ -39,7 +50,8 @@ In **Settings > Secrets and variables > Actions**:
 
 | Name | Value |
 | --- | --- |
-| `ORG_GITHUB_TOKEN` | GitHub token |
+| `GITHUB_APP_ID` | GitHub App ID |
+| `GITHUB_APP_PRIVATE_KEY` | GitHub App private key |
 | `SLACK_BOT_TOKEN` | Slack bot token (`xoxb-...`) |
 
 **Variables**
@@ -72,9 +84,17 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GITHUB_APP_ID }}
+          private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+
       - uses: your-org/github-pr-reminders@v1
         with:
-          github_token: ${{ secrets.ORG_GITHUB_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
           slack_bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
           slack_channel: ${{ vars.SLACK_CHANNEL }}
           github_org: ${{ vars.GITHUB_ORG }}
